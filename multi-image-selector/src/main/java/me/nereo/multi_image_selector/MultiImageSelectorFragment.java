@@ -275,7 +275,7 @@ public class MultiImageSelectorFragment extends Fragment {
     }
 
     /**
-     * Create pop ListView
+     * Create popup ListView
      */
     private void createPopupFolderList(int width, int height) {
         mFolderPopupWindow = new ListPopupWindow(getActivity());
@@ -366,7 +366,6 @@ public class MultiImageSelectorFragment extends Fragment {
                 mFolderPopupWindow.dismiss();
             }
         }
-
         mGridView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -453,7 +452,7 @@ public class MultiImageSelectorFragment extends Fragment {
                 }
                 mImageAdapter.select(image);
             } else if (mode == MODE_SINGLE) {
-                // 单选模式
+                // Radio mode
                 if (mCallback != null) {
                     mCallback.onSingleImageSelected(image.path);
                 }
@@ -467,22 +466,21 @@ public class MultiImageSelectorFragment extends Fragment {
                 MediaStore.Images.Media.DATA,
                 MediaStore.Images.Media.DISPLAY_NAME,
                 MediaStore.Images.Media.DATE_ADDED,
+                MediaStore.Images.Media.DATE_MODIFIED,
+                MediaStore.Images.Media.SIZE,
                 MediaStore.Images.Media._ID};
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
             if (id == LOADER_ALL) {
-                CursorLoader cursorLoader = new CursorLoader(getActivity(),
+                return new CursorLoader(getActivity(),
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI, IMAGE_PROJECTION,
                         null, null, IMAGE_PROJECTION[2] + " DESC");
-                return cursorLoader;
             } else if (id == LOADER_CATEGORY) {
-                CursorLoader cursorLoader = new CursorLoader(getActivity(),
+                return new CursorLoader(getActivity(),
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI, IMAGE_PROJECTION,
                         IMAGE_PROJECTION[0] + " like '%" + args.getString("path") + "%'", null, IMAGE_PROJECTION[2] + " DESC");
-                return cursorLoader;
             }
-
             return null;
         }
 
