@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -47,7 +48,8 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
     public static final int MODE_MULTI = 1;
 
     private ArrayList<String> resultList = new ArrayList<>();
-    private Button mSubmitButton;
+    private Button mSubmitBtn;
+    private ImageButton mSortBtn;
     private int mDefaultCount;
 
     @Override
@@ -58,21 +60,27 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
         Intent intent = getIntent();
         mDefaultCount = intent.getIntExtra(EXTRA_SELECT_COUNT, 9);
         int mode = intent.getIntExtra(EXTRA_SELECT_MODE, MODE_MULTI);
-        boolean isShow = intent.getBooleanExtra(EXTRA_SHOW_CAMERA, true);
+        boolean isShowCamera = intent.getBooleanExtra(EXTRA_SHOW_CAMERA, true);
         if (mode == MODE_MULTI && intent.hasExtra(EXTRA_DEFAULT_SELECTED_LIST)) {
             resultList = intent.getStringArrayListExtra(EXTRA_DEFAULT_SELECTED_LIST);
         }
+        addViewerFragment(mode, isShowCamera);
+        initButtons();
+    }
 
+    private void addViewerFragment(int mode, boolean isShowCamera) {
         Bundle bundle = new Bundle();
         bundle.putInt(MultiImageSelectorFragment.EXTRA_SELECT_COUNT, mDefaultCount);
         bundle.putInt(MultiImageSelectorFragment.EXTRA_SELECT_MODE, mode);
-        bundle.putBoolean(MultiImageSelectorFragment.EXTRA_SHOW_CAMERA, isShow);
+        bundle.putBoolean(MultiImageSelectorFragment.EXTRA_SHOW_CAMERA, isShowCamera);
         bundle.putStringArrayList(MultiImageSelectorFragment.EXTRA_DEFAULT_SELECTED_LIST, resultList);
 
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.image_grid, Fragment.instantiate(this, MultiImageSelectorFragment.class.getName(), bundle))
                 .commit();
+    }
 
+    private void initButtons() {
         // Back button
         findViewById(R.id.btn_back).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -81,17 +89,16 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
                 finish();
             }
         });
-
-        // Finish button
-        mSubmitButton = (Button) findViewById(R.id.commit);
+        // Submit button
+        mSubmitBtn = (Button) findViewById(R.id.commit);
         if (resultList == null || resultList.size() <= 0) {
-            mSubmitButton.setText(getString(R.string.choose));
-            mSubmitButton.setEnabled(false);
+            mSubmitBtn.setText(getString(R.string.choose));
+            mSubmitBtn.setEnabled(false);
         } else {
-            mSubmitButton.setText(getString(R.string.choose) + "(" + resultList.size() + "/" + mDefaultCount + ")");
-            mSubmitButton.setEnabled(true);
+            mSubmitBtn.setText(getString(R.string.choose) + "(" + resultList.size() + "/" + mDefaultCount + ")");
+            mSubmitBtn.setEnabled(true);
         }
-        mSubmitButton.setOnClickListener(new View.OnClickListener() {
+        mSubmitBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (resultList != null && resultList.size() > 0) {
@@ -101,6 +108,14 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
                     setResult(RESULT_OK, data);
                     finish();
                 }
+            }
+        });
+        // Sort button
+        mSortBtn = (ImageButton) findViewById(R.id.btn_sort);
+        mSortBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: 19.01.2016 Implement sorting
             }
         });
     }
@@ -121,9 +136,9 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
         }
         // After picture selected, change button states
         if (resultList.size() > 0) {
-            mSubmitButton.setText(getString(R.string.choose) + "(" + resultList.size() + "/" + mDefaultCount + ")");
-            if (!mSubmitButton.isEnabled()) {
-                mSubmitButton.setEnabled(true);
+            mSubmitBtn.setText(getString(R.string.choose) + "(" + resultList.size() + "/" + mDefaultCount + ")");
+            if (!mSubmitBtn.isEnabled()) {
+                mSubmitBtn.setEnabled(true);
             }
         }
     }
@@ -132,14 +147,14 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
     public void onImageUnselected(String path) {
         if (resultList.contains(path)) {
             resultList.remove(path);
-            mSubmitButton.setText(getString(R.string.choose) + "(" + resultList.size() + "/" + mDefaultCount + ")");
+            mSubmitBtn.setText(getString(R.string.choose) + "(" + resultList.size() + "/" + mDefaultCount + ")");
         } else {
-            mSubmitButton.setText(getString(R.string.choose) + "(" + resultList.size() + "/" + mDefaultCount + ")");
+            mSubmitBtn.setText(getString(R.string.choose) + "(" + resultList.size() + "/" + mDefaultCount + ")");
         }
         // When no one picture selected, change button states
         if (resultList.size() == 0) {
-            mSubmitButton.setText(getString(R.string.choose));
-            mSubmitButton.setEnabled(false);
+            mSubmitBtn.setText(getString(R.string.choose));
+            mSubmitBtn.setEnabled(false);
         }
     }
 
