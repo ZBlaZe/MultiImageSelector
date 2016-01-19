@@ -1,9 +1,12 @@
 package me.nereo.multi_image_selector;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.widget.ListPopupWindow;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -51,6 +54,7 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
     private Button mSubmitBtn;
     private ImageButton mSortBtn;
     private int mDefaultCount;
+    private ListPopupWindow mSortTypePopupWindow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,9 +119,34 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
         mSortBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 19.01.2016 Implement sorting
+                if (mSortTypePopupWindow == null) {
+//                    createPopupSortType(mGridWidth, mGridHeight);
+                    createPopupSortType();
+                }
+
+                if (mSortTypePopupWindow.isShowing()) {
+                    mSortTypePopupWindow.dismiss();
+                } else {
+                    mSortTypePopupWindow.show();
+//                    int index = mFolderAdapter.getSelectIndex();
+//                    index = index == 0 ? index : index - 1;
+//                    mSortTypePopupWindow.getListView().setSelection(index);
+                }
             }
         });
+    }
+
+    private void createPopupSortType() {
+        mSortTypePopupWindow = new ListPopupWindow(this);
+        mSortTypePopupWindow.setBackgroundDrawable(new ColorDrawable(Color.RED));
+//        mSortTypePopupWindow.setAdapter(mFolderAdapter);
+//        mSortTypePopupWindow.setContentWidth(width);
+//        mSortTypePopupWindow.setWidth(width);
+        mSortTypePopupWindow.setWidth(650);
+//        mSortTypePopupWindow.setHeight(height * 5 / 8);
+        mSortTypePopupWindow.setHeight(500);
+        mSortTypePopupWindow.setAnchorView(mSortBtn);
+        mSortTypePopupWindow.setModal(true);
     }
 
     @Override
