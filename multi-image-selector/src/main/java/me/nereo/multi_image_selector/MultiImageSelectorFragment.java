@@ -503,10 +503,11 @@ public class MultiImageSelectorFragment extends Fragment {
                             // Get folder name
                             File imageFile = new File(path);
                             File folderFile = imageFile.getParentFile();
-                            Folder folder = new Folder();
-                            folder.name = folderFile.getName();
-                            folder.path = folderFile.getAbsolutePath();
-                            folder.cover = image;
+                            Folder folder = new Folder(
+                                    folderFile.getName(),
+                                    folderFile.getAbsolutePath(),
+                                    image
+                            );
                             if (!mResultFolder.contains(folder)) {
                                 List<Image> imageList = new ArrayList<>();
                                 imageList.add(image);
