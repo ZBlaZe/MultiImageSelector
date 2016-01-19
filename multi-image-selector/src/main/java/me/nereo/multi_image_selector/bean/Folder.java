@@ -3,7 +3,7 @@ package me.nereo.multi_image_selector.bean;
 import java.util.List;
 
 /**
- * 文件夹
+ * Folder
  * Created by Nereo on 2015/4/7.
  */
 public class Folder {
@@ -17,7 +17,7 @@ public class Folder {
         try {
             Folder other = (Folder) o;
             return this.path.equalsIgnoreCase(other.path);
-        }catch (ClassCastException e){
+        } catch (ClassCastException e) {
             e.printStackTrace();
         }
         return super.equals(o);
