@@ -69,6 +69,10 @@ public class MultiImageSelectorFragment extends Fragment {
      */
     public static final String EXTRA_DEFAULT_SELECTED_LIST = "default_result";
     /**
+     * The default sort order id
+     */
+    public static final String EXTRA_SORT_ORDER_ID = "sort_order_id";
+    /**
      * Radio
      */
     public static final int MODE_SINGLE = 0;
@@ -115,6 +119,8 @@ public class MultiImageSelectorFragment extends Fragment {
 
     private File mTmpFile;
 
+    public int mCurrentSortOrderId;
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -134,22 +140,26 @@ public class MultiImageSelectorFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        Bundle args = getArguments();
         // Select the number of pictures
-        mDesireImageCount = getArguments().getInt(EXTRA_SELECT_COUNT);
+        mDesireImageCount = args.getInt(EXTRA_SELECT_COUNT);
 
         // Image Select mode
-        final int mode = getArguments().getInt(EXTRA_SELECT_MODE);
+        final int mode = args.getInt(EXTRA_SELECT_MODE);
 
         // The default selection
         if (mode == MODE_MULTI) {
-            ArrayList<String> tmp = getArguments().getStringArrayList(EXTRA_DEFAULT_SELECTED_LIST);
+            ArrayList<String> tmp = args.getStringArrayList(EXTRA_DEFAULT_SELECTED_LIST);
             if (tmp != null && tmp.size() > 0) {
                 resultList = tmp;
             }
         }
 
+        // Sort order id
+        mCurrentSortOrderId = args.getInt(EXTRA_SORT_ORDER_ID);
+
         // Whether to display the camera
-        mIsShowCamera = getArguments().getBoolean(EXTRA_SHOW_CAMERA, true);
+        mIsShowCamera = args.getBoolean(EXTRA_SHOW_CAMERA, true);
         mImageAdapter = new ImageGridAdapter(getActivity(), mIsShowCamera);
         // Choose whether to display indicator
         mImageAdapter.showSelectIndicator(mode == MODE_MULTI);
@@ -299,28 +309,7 @@ public class MultiImageSelectorFragment extends Fragment {
                     @Override
                     public void run() {
                         mFolderPopupWindow.dismiss();
-
-                        if (index == 0) {
-                            getActivity().getSupportLoaderManager().restartLoader(LOADER_ALL, null, mLoaderCallback);
-                            mCategoryText.setText(R.string.folder_all);
-                            if (mIsShowCamera) {
-                                mImageAdapter.setShowCamera(true);
-                            } else {
-                                mImageAdapter.setShowCamera(false);
-                            }
-                        } else {
-                            Folder folder = (Folder) v.getAdapter().getItem(index);
-                            if (null != folder) {
-                                mImageAdapter.setData(folder.images);
-                                mCategoryText.setText(folder.name);
-                                // Set the default selection
-                                if (resultList != null && resultList.size() > 0) {
-                                    mImageAdapter.setDefaultSelected(resultList);
-                                }
-                            }
-                            mImageAdapter.setShowCamera(false);
-                        }
-
+                        setDataForCategory(index, v);
                         // Slide to the initial position
                         mGridView.smoothScrollToPosition(0);
                     }
@@ -328,6 +317,25 @@ public class MultiImageSelectorFragment extends Fragment {
 
             }
         });
+    }
+
+    private void setDataForCategory(int index, AdapterView v) {
+        if (index == 0) {
+            getActivity().getSupportLoaderManager().restartLoader(LOADER_ALL, null, mLoaderCallback);
+            mCategoryText.setText(R.string.folder_all);
+            mImageAdapter.setShowCamera(mIsShowCamera);
+        } else {
+            Folder folder = (Folder) v.getAdapter().getItem(index);
+            if (null != folder) {
+                mImageAdapter.setData(folder.images);
+                mCategoryText.setText(folder.name);
+                // Set the default selection
+                if (resultList != null && resultList.size() > 0) {
+                    mImageAdapter.setDefaultSelected(resultList);
+                }
+            }
+            mImageAdapter.setShowCamera(false);
+        }
     }
 
     @Override
@@ -460,6 +468,15 @@ public class MultiImageSelectorFragment extends Fragment {
         }
     }
 
+    /**
+     * Change sorting
+     *
+     * @param sortOrderId
+     */
+    public void changeSortOrder(int sortOrderId) {
+        mCurrentSortOrderId = sortOrderId;
+    }
+
     private LoaderManager.LoaderCallbacks<Cursor> mLoaderCallback = new LoaderManager.LoaderCallbacks<Cursor>() {
 
         private final String[] IMAGE_PROJECTION = {
@@ -472,14 +489,15 @@ public class MultiImageSelectorFragment extends Fragment {
 
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            String sortOrder = IMAGE_PROJECTION[mCurrentSortOrderId / 2 + 1] + (mCurrentSortOrderId % 2 == 0 ? "" : " DESC");
             if (id == LOADER_ALL) {
                 return new CursorLoader(getActivity(),
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI, IMAGE_PROJECTION,
-                        null, null, IMAGE_PROJECTION[2] + " DESC");
+                        null, null, sortOrder);
             } else if (id == LOADER_CATEGORY) {
                 return new CursorLoader(getActivity(),
                         MediaStore.Images.Media.EXTERNAL_CONTENT_URI, IMAGE_PROJECTION,
-                        IMAGE_PROJECTION[0] + " like '%" + args.getString("path") + "%'", null, IMAGE_PROJECTION[2] + " DESC");
+                        IMAGE_PROJECTION[0] + " like '%" + args.getString("path") + "%'", null, sortOrder);
             }
             return null;
         }

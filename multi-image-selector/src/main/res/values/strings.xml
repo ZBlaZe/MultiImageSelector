@@ -7,4 +7,15 @@
     <string name="back">Back</string>
     <string name="choose">Choose</string>
     <string name="take_photo">Take photo</string>
+
+    <string-array name="sort_types">
+        <item>Name</item>
+        <item>Name (Desc.)</item>
+        <item>Date created</item>
+        <item>Date created (Desc.)</item>
+        <item>Date modified</item>
+        <item>Date modified (Desc.)</item>
+        <item>Size</item>
+        <item>Size (Desc.)</item>
+    </string-array>
 </resources>
