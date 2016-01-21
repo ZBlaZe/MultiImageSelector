@@ -429,41 +429,41 @@ public class MultiImageSelectorFragment extends Fragment {
      * @param image
      */
     private void selectImageFromGrid(Image image, int mode) {
-        if (image != null) {
-            // Multiple choice mode
-            if (mode == MODE_MULTI) {
-                if (resultList.contains(image.path)) {
-                    resultList.remove(image.path);
-                    if (resultList.size() != 0) {
-                        mPreviewBtn.setEnabled(true);
-                        mPreviewBtn.setText(getResources().getString(R.string.preview) + "(" + resultList.size() + ")");
-                    } else {
-                        mPreviewBtn.setEnabled(false);
-                        mPreviewBtn.setText(R.string.preview);
-                    }
-                    if (mCallback != null) {
-                        mCallback.onImageUnselected(image.path);
-                    }
-                } else {
-                    // Analyzing choose the number of questions
-                    if (mDesireImageCount == resultList.size()) {
-                        Toast.makeText(getActivity(), R.string.msg_amount_limit, Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    resultList.add(image.path);
+        if (image == null)
+            return;
+        // Multiple choice mode
+        if (mode == MODE_MULTI) {
+            if (resultList.contains(image.path)) {
+                resultList.remove(image.path);
+                if (resultList.size() != 0) {
                     mPreviewBtn.setEnabled(true);
                     mPreviewBtn.setText(getResources().getString(R.string.preview) + "(" + resultList.size() + ")");
-                    if (mCallback != null) {
-                        mCallback.onImageSelected(image.path);
-                    }
+                } else {
+                    mPreviewBtn.setEnabled(false);
+                    mPreviewBtn.setText(R.string.preview);
                 }
-                mImageAdapter.select(image);
-            } else if (mode == MODE_SINGLE) {
-                // Radio mode
                 if (mCallback != null) {
-                    mCallback.onSingleImageSelected(image.path);
+                    mCallback.onImageUnselected(image.path);
                 }
+            } else {
+                // Analyzing choose the number of questions
+                if (mDesireImageCount == resultList.size()) {
+                    Toast.makeText(getActivity(), R.string.msg_amount_limit, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                resultList.add(image.path);
+                mPreviewBtn.setEnabled(true);
+                mPreviewBtn.setText(getResources().getString(R.string.preview) + "(" + resultList.size() + ")");
+                if (mCallback != null) {
+                    mCallback.onImageSelected(image.path);
+                }
+            }
+            mImageAdapter.select(image);
+        } else if (mode == MODE_SINGLE) {
+            // Radio mode
+            if (mCallback != null) {
+                mCallback.onSingleImageSelected(image.path);
             }
         }
     }
@@ -506,49 +506,49 @@ public class MultiImageSelectorFragment extends Fragment {
         public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
             if (data != null) {
                 List<Image> images = new ArrayList<>();
-                int count = data.getCount();
-                if (count > 0) {
-                    data.moveToFirst();
-                    do {
-                        String path = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[0]));
-                        String name = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[1]));
-                        long dateTime = data.getLong(data.getColumnIndexOrThrow(IMAGE_PROJECTION[2]));
-                        Image image = new Image(path, name, dateTime);
-                        images.add(image);
-                        if (!hasFolderGened) {
-                            // Get folder name
-                            File imageFile = new File(path);
-                            File folderFile = imageFile.getParentFile();
-                            Folder folder = new Folder(
-                                    folderFile.getName(),
-                                    folderFile.getAbsolutePath(),
-                                    image
-                            );
-                            if (!mResultFolder.contains(folder)) {
-                                List<Image> imageList = new ArrayList<>();
-                                imageList.add(image);
-                                folder.images = imageList;
-                                mResultFolder.add(folder);
-                            } else {
-                                // Update
-                                Folder f = mResultFolder.get(mResultFolder.indexOf(folder));
-                                f.images.add(image);
-                            }
+                if(data.getCount() == 0)
+                    return;
+//                mResultFolder.clear();
+                data.moveToFirst();
+                do {
+                    String path = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[0]));
+                    String name = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[1]));
+                    long dateTime = data.getLong(data.getColumnIndexOrThrow(IMAGE_PROJECTION[2]));
+                    Image image = new Image(path, name, dateTime);
+                    images.add(image);
+                    if (!hasFolderGened) {
+//                        if (true) {
+                        // Get folder name
+                        File imageFile = new File(path);
+                        File folderFile = imageFile.getParentFile();
+                        Folder folder = new Folder(
+                                folderFile.getName(),
+                                folderFile.getAbsolutePath(),
+                                image
+                        );
+                        if (!mResultFolder.contains(folder)) {
+                            List<Image> imageList = new ArrayList<>();
+                            imageList.add(image);
+                            folder.images = imageList;
+                            mResultFolder.add(folder);
+                        } else {
+                            // Update
+                            Folder f = mResultFolder.get(mResultFolder.indexOf(folder));
+                            f.images.add(image);
                         }
-
-                    } while (data.moveToNext());
-
-                    mImageAdapter.setData(images);
-
-                    // Set the default selection
-                    if (resultList != null && resultList.size() > 0) {
-                        mImageAdapter.setDefaultSelected(resultList);
                     }
 
-                    mFolderAdapter.setData(mResultFolder);
-                    hasFolderGened = true;
+                } while (data.moveToNext());
 
+                mImageAdapter.setData(images);
+
+                // Set the default selection
+                if (resultList != null && resultList.size() > 0) {
+                    mImageAdapter.setDefaultSelected(resultList);
                 }
+
+                mFolderAdapter.setData(mResultFolder);
+                hasFolderGened = true;
             }
         }
 
