@@ -17,7 +17,7 @@
     android:columnWidth="@dimen/image_size"/>
 
     <TextView
-        android:id="@+id/timeline_area"
+        android:id="@+id/indicator_area"
         tools:text="2015年4月1日"
         android:textColor="#CDCECE"
         android:textSize="14sp"

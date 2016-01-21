@@ -102,7 +102,7 @@ public class MultiImageSelectorFragment extends Fragment {
     private ListPopupWindow mFolderPopupWindow;
 
     // Timeline
-    private TextView mTimeLineText;
+    private TextView mIndicatorLineText;
     // Category
     private TextView mCategoryText;
     // Preview button
@@ -112,7 +112,6 @@ public class MultiImageSelectorFragment extends Fragment {
 
     private int mDesireImageCount;
 
-    private boolean hasFolderGened = false;
     private boolean mIsShowCamera = false;
 
     private int mGridWidth, mGridHeight;
@@ -167,9 +166,9 @@ public class MultiImageSelectorFragment extends Fragment {
 
         mPopupAnchorView = view.findViewById(R.id.footer);
 
-        mTimeLineText = (TextView) view.findViewById(R.id.timeline_area);
+        mIndicatorLineText = (TextView) view.findViewById(R.id.indicator_area);
         // Initialization, first hide the current timeline
-        mTimeLineText.setVisibility(View.GONE);
+        mIndicatorLineText.setVisibility(View.GONE);
 
         mCategoryText = (TextView) view.findViewById(R.id.category_btn);
         // Initialization, load all pictures
@@ -219,20 +218,20 @@ public class MultiImageSelectorFragment extends Fragment {
                 }
 
                 if (state == SCROLL_STATE_IDLE) {
-                    // Stop slide, the date indicator disappears
-                    mTimeLineText.setVisibility(View.GONE);
+                    // Stop slide, the indicator disappears
+                    mIndicatorLineText.setVisibility(View.GONE);
                 } else if (state == SCROLL_STATE_FLING) {
-                    mTimeLineText.setVisibility(View.VISIBLE);
+                    mIndicatorLineText.setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                if (mTimeLineText.getVisibility() == View.VISIBLE) {
+                if (mIndicatorLineText.getVisibility() == View.VISIBLE) {
                     int index = firstVisibleItem + 1 == view.getAdapter().getCount() ? view.getAdapter().getCount() - 1 : firstVisibleItem + 1;
                     Image image = (Image) view.getAdapter().getItem(index);
                     if (image != null) {
-                        mTimeLineText.setText(TimeUtils.formatPhotoDate(image.path));
+                        mIndicatorLineText.setText(getActualIndicatorParameter(image));
                     }
                 }
             }
@@ -285,6 +284,30 @@ public class MultiImageSelectorFragment extends Fragment {
         mFolderAdapter = new FolderAdapter(getActivity());
     }
 
+    private String getActualIndicatorParameter(Image image) {
+        switch (mCurrentSortOrderId) {
+            // Name
+            case 0:
+            case 1:
+                return image.name.substring(0, 1);
+            // Date created
+            case 2:
+            case 3:
+                return TimeUtils.formatPhotoDate(image.timeAdded);
+            // Date modified
+            case 4:
+            case 5:
+                return TimeUtils.formatPhotoDate(image.timeModified);
+            // Size
+            case 6:
+            case 7:
+                return String.format("%s bytes", image.size);
+            default:
+                return "";
+        }
+
+    }
+
     /**
      * Create popup ListView
      */
@@ -312,7 +335,7 @@ public class MultiImageSelectorFragment extends Fragment {
                         mFolderPopupWindow.dismiss();
                         setDataForCategory(index, v);
                         // Slide to the initial position
-                        mGridView.setSelection(0);
+                        mGridView.smoothScrollToPosition(0);
                     }
                 }, 100);
 
@@ -519,13 +542,15 @@ public class MultiImageSelectorFragment extends Fragment {
                 mResultFolder.clear();
                 data.moveToFirst();
                 do {
-                    String path = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[0]));
-                    String name = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[1]));
-                    long dateTime = data.getLong(data.getColumnIndexOrThrow(IMAGE_PROJECTION[2]));
-                    Image image = new Image(path, name, dateTime);
+                    String path     = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[0]));
+                    String name     = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[1]));
+                    long dateAdded  = data.getLong(data.getColumnIndexOrThrow(IMAGE_PROJECTION[2]));
+                    long dateModify = data.getLong(data.getColumnIndexOrThrow(IMAGE_PROJECTION[3]));
+                    long size       = data.getLong(data.getColumnIndexOrThrow(IMAGE_PROJECTION[4]));
+                    Image image = new Image(path, name, dateAdded, dateModify, size);
                     images.add(image);
                     // Regenerate folders
-                    // Get folder name
+                        // Get folder name
                     File imageFile = new File(path);
                     File folderFile = imageFile.getParentFile();
                     Folder folder = new Folder(
@@ -553,7 +578,6 @@ public class MultiImageSelectorFragment extends Fragment {
                 }
 
                 mFolderAdapter.setData(mResultFolder);
-                hasFolderGened = true;
 
                 if(mLastSelectedFolder != null) {
                     mLastSelectedFolder = updateFolderData(mLastSelectedFolder);

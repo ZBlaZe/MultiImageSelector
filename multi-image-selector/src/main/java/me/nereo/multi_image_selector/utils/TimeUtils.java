@@ -12,7 +12,7 @@ import java.util.Locale;
 public class TimeUtils {
 
     public static String timeFormat(long timeMillis, String pattern) {
-        SimpleDateFormat format = new SimpleDateFormat(pattern, Locale.CHINA);
+        SimpleDateFormat format = new SimpleDateFormat(pattern, Locale.getDefault());
         return format.format(new Date(timeMillis));
     }
 
@@ -20,7 +20,7 @@ public class TimeUtils {
         return timeFormat(time, "yyyy-MM-dd");
     }
 
-    public static String formatPhotoDate(String path) {
+    public static String formatPhotoLastModificationDate(String path) {
         File file = new File(path);
         if (file.exists()) {
             long time = file.lastModified();

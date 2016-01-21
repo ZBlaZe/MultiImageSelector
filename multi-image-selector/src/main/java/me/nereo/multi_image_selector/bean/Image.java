@@ -7,12 +7,16 @@ package me.nereo.multi_image_selector.bean;
 public class Image {
     public String path;
     public String name;
-    public long time;
+    public long timeAdded;
+    public long timeModified;
+    public long size;
 
-    public Image(String path, String name, long time) {
-        this.path = path;
-        this.name = name;
-        this.time = time;
+    public Image(String path, String name, long timeAdded, long timeModified, long size) {
+        this.path           = path;
+        this.name           = name;
+        this.timeAdded      = timeAdded * 1000L;
+        this.timeModified   = timeModified * 1000L;
+        this.size           = size;
     }
 
     @Override
