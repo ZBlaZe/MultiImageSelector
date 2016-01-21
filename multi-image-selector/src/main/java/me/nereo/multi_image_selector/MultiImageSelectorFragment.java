@@ -570,7 +570,7 @@ public class MultiImageSelectorFragment extends Fragment {
 
     private Folder updateFolderData(Folder targetFolder) {
         for (Folder curFolder : mResultFolder) {
-            if(targetFolder.path.equals(curFolder.path))
+            if(targetFolder.equals(curFolder))
                 return curFolder;
         }
         return null;
