@@ -57,12 +57,13 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
     /**
      * Default sort order id
      */
-    private static final int DEFAULT_SORT_ORDER_ID = 0;
+    private static final int DEFAULT_SORT_ORDER_ID = 3;
 
     private ArrayList<String> resultList = new ArrayList<>();
     private Button mSubmitBtn;
     private ImageButton mSortBtn;
     private int mDefaultCount;
+    private int mSelectedSortOrderId = DEFAULT_SORT_ORDER_ID;
     private ListPopupWindow mSortOrderPopupWindow;
     private ArrayAdapter<String> mSortOrderAdapter;
 
@@ -143,10 +144,8 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
                 } else {
                     mSortOrderPopupWindow.show();
                     ListView sortTypesListView = mSortOrderPopupWindow.getListView();
-                    if(sortTypesListView.getCheckedItemPosition() == -1) {
-                        sortTypesListView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-                        sortTypesListView.setItemChecked(DEFAULT_SORT_ORDER_ID, true);
-                    }
+                    sortTypesListView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
+                    sortTypesListView.setItemChecked(mSelectedSortOrderId, true);
                 }
             }
         });
@@ -218,6 +217,9 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
     private class OnSortOrderSelectedListener implements AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+
+            mSelectedSortOrderId = position;
+
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -225,7 +227,7 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
                     Fragment frag = getSupportFragmentManager().findFragmentById(R.id.image_grid);
                     ((MultiImageSelectorFragment) frag).changeSortOrder(position);
                 }
-            }, 100);
+            }, 150);
         }
     }
 }
