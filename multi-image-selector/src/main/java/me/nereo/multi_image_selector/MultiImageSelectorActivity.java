@@ -152,18 +152,7 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
         });
     }
 
-    private void updatePopupSize() {
-        int width = getWindow().getDecorView().getWidth();
-        int height = getWindow().getDecorView().getHeight();
-
-        mSortOrderPopupWindow.setContentWidth(width / 3 * 2);
-        mSortOrderPopupWindow.setWidth(width / 3 * 2);
-        mSortOrderPopupWindow.setHeight(height * 5 / 8);
-    }
-
     private void createPopupSortOrder() {
-
-
         mSortOrderPopupWindow = new ListPopupWindow(this);
         updatePopupSize();
         mSortOrderPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
@@ -171,6 +160,15 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
         mSortOrderPopupWindow.setAnchorView(mSortBtn);
         mSortOrderPopupWindow.setModal(true);
         mSortOrderPopupWindow.setOnItemClickListener(new OnSortOrderSelectedListener());
+    }
+
+    private void updatePopupSize() {
+        int width = getWindow().getDecorView().getWidth();
+        int height = getWindow().getDecorView().getHeight();
+
+        mSortOrderPopupWindow.setContentWidth(width / 3 * 2);
+        mSortOrderPopupWindow.setWidth(width / 3 * 2);
+        mSortOrderPopupWindow.setHeight(height * 5 / 8);
     }
 
     @Override
