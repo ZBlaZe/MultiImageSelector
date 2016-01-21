@@ -13,7 +13,7 @@ public class Folder {
     public List<Image> images;
 
     public Folder() {
-
+        this.path = "";
     }
 
     public Folder(String name, String path, Image cover) {
