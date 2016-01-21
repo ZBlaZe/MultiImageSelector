@@ -1,6 +1,7 @@
 package me.nereo.multi_image_selector;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -135,13 +136,13 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
             @Override
             public void onClick(View v) {
                 if (mSortOrderPopupWindow == null) {
-//                    createPopupSortType(mGridWidth, mGridHeight);
-                    createPopupSortType();
+                    createPopupSortOrder();
                 }
 
                 if (mSortOrderPopupWindow.isShowing()) {
                     mSortOrderPopupWindow.dismiss();
                 } else {
+                    updatePopupSize();
                     mSortOrderPopupWindow.show();
                     ListView sortTypesListView = mSortOrderPopupWindow.getListView();
                     sortTypesListView.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
@@ -151,15 +152,22 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
         });
     }
 
-    private void createPopupSortType() {
+    private void updatePopupSize() {
+        int width = getWindow().getDecorView().getWidth();
+        int height = getWindow().getDecorView().getHeight();
+
+        mSortOrderPopupWindow.setContentWidth(width / 3 * 2);
+        mSortOrderPopupWindow.setWidth(width / 3 * 2);
+        mSortOrderPopupWindow.setHeight(height * 5 / 8);
+    }
+
+    private void createPopupSortOrder() {
+
+
         mSortOrderPopupWindow = new ListPopupWindow(this);
+        updatePopupSize();
         mSortOrderPopupWindow.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
         mSortOrderPopupWindow.setAdapter(mSortOrderAdapter);
-//        mSortOrderPopupWindow.setContentWidth(width);
-//        mSortOrderPopupWindow.setWidth(width);
-        mSortOrderPopupWindow.setWidth(650);
-//        mSortOrderPopupWindow.setHeight(height * 5 / 8);
-        mSortOrderPopupWindow.setHeight(500);
         mSortOrderPopupWindow.setAnchorView(mSortBtn);
         mSortOrderPopupWindow.setModal(true);
         mSortOrderPopupWindow.setOnItemClickListener(new OnSortOrderSelectedListener());
@@ -212,6 +220,13 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
             setResult(RESULT_OK, data);
             finish();
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if(mSortOrderPopupWindow != null && mSortOrderPopupWindow.isShowing())
+            mSortOrderPopupWindow.dismiss();
     }
 
     private class OnSortOrderSelectedListener implements AdapterView.OnItemClickListener {
