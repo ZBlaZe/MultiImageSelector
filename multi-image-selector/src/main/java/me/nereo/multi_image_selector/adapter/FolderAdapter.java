@@ -59,8 +59,7 @@ public class FolderAdapter extends BaseAdapter {
 
     @Override
     public Folder getItem(int i) {
-        if (i == 0) return null;
-        return mFolders.get(i - 1);
+        return i == 0 ? null : mFolders.get(i - 1);
     }
 
     @Override
@@ -95,11 +94,7 @@ public class FolderAdapter extends BaseAdapter {
             } else {
                 holder.bindData(getItem(i));
             }
-            if (lastSelected == i) {
-                holder.indicator.setVisibility(View.VISIBLE);
-            } else {
-                holder.indicator.setVisibility(View.INVISIBLE);
-            }
+            holder.indicator.setVisibility(lastSelected == i ? View.VISIBLE : View.INVISIBLE);
         }
         return view;
     }
