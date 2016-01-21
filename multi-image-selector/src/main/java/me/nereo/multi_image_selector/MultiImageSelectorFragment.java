@@ -120,6 +120,7 @@ public class MultiImageSelectorFragment extends Fragment {
     private File mTmpFile;
 
     public int mCurrentSortOrderId;
+    private Folder mLastSelectedFolder;
 
     @Override
     public void onAttach(Activity activity) {
@@ -320,22 +321,31 @@ public class MultiImageSelectorFragment extends Fragment {
     }
 
     private void setDataForCategory(int index, AdapterView v) {
+        mLastSelectedFolder = null;
         if (index == 0) {
-            getActivity().getSupportLoaderManager().restartLoader(LOADER_ALL, null, mLoaderCallback);
-            mCategoryText.setText(R.string.folder_all);
-            mImageAdapter.setShowCamera(mIsShowCamera);
+            showAllImages();
         } else {
-            Folder folder = (Folder) v.getAdapter().getItem(index);
-            if (null != folder) {
-                mImageAdapter.setData(folder.images);
-                mCategoryText.setText(folder.name);
-                // Set the default selection
-                if (resultList != null && resultList.size() > 0) {
-                    mImageAdapter.setDefaultSelected(resultList);
-                }
-            }
-            mImageAdapter.setShowCamera(false);
+            mLastSelectedFolder = (Folder) v.getAdapter().getItem(index);
+            showImagesFromFolder(mLastSelectedFolder);
         }
+    }
+
+    private void showAllImages() {
+        getActivity().getSupportLoaderManager().restartLoader(LOADER_ALL, null, mLoaderCallback);
+        mCategoryText.setText(R.string.folder_all);
+        mImageAdapter.setShowCamera(mIsShowCamera);
+    }
+
+    private void showImagesFromFolder(Folder folder) {
+        if (null != folder) {
+            mImageAdapter.setData(folder.images);
+            mCategoryText.setText(folder.name);
+            // Set the default selection
+            if (resultList != null && resultList.size() > 0) {
+                mImageAdapter.setDefaultSelected(resultList);
+            }
+        }
+        mImageAdapter.setShowCamera(false);
     }
 
     @Override
@@ -352,10 +362,8 @@ public class MultiImageSelectorFragment extends Fragment {
         // After completion of the camera to take pictures, return image path
         if (requestCode == REQUEST_CAMERA) {
             if (resultCode == Activity.RESULT_OK) {
-                if (mTmpFile != null) {
-                    if (mCallback != null) {
-                        mCallback.onCameraShot(mTmpFile);
-                    }
+                if (mTmpFile != null && mCallback != null) {
+                    mCallback.onCameraShot(mTmpFile);
                 }
             } else {
                 if (mTmpFile != null && mTmpFile.exists()) {
@@ -369,10 +377,8 @@ public class MultiImageSelectorFragment extends Fragment {
     public void onConfigurationChanged(Configuration newConfig) {
         Log.d(TAG, "on change");
 
-        if (mFolderPopupWindow != null) {
-            if (mFolderPopupWindow.isShowing()) {
-                mFolderPopupWindow.dismiss();
-            }
+        if (mFolderPopupWindow != null && mFolderPopupWindow.isShowing()) {
+            mFolderPopupWindow.dismiss();
         }
         mGridView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -473,8 +479,9 @@ public class MultiImageSelectorFragment extends Fragment {
      *
      * @param sortOrderId
      */
-    public void changeSortOrder(int sortOrderId) {
+    public void setSortOrder(int sortOrderId) {
         mCurrentSortOrderId = sortOrderId;
+        getActivity().getSupportLoaderManager().restartLoader(LOADER_ALL, null, mLoaderCallback);
     }
 
     private LoaderManager.LoaderCallbacks<Cursor> mLoaderCallback = new LoaderManager.LoaderCallbacks<Cursor>() {
@@ -508,7 +515,7 @@ public class MultiImageSelectorFragment extends Fragment {
                 List<Image> images = new ArrayList<>();
                 if(data.getCount() == 0)
                     return;
-//                mResultFolder.clear();
+                mResultFolder.clear();
                 data.moveToFirst();
                 do {
                     String path = data.getString(data.getColumnIndexOrThrow(IMAGE_PROJECTION[0]));
@@ -516,28 +523,25 @@ public class MultiImageSelectorFragment extends Fragment {
                     long dateTime = data.getLong(data.getColumnIndexOrThrow(IMAGE_PROJECTION[2]));
                     Image image = new Image(path, name, dateTime);
                     images.add(image);
-                    if (!hasFolderGened) {
-//                        if (true) {
-                        // Get folder name
-                        File imageFile = new File(path);
-                        File folderFile = imageFile.getParentFile();
-                        Folder folder = new Folder(
-                                folderFile.getName(),
-                                folderFile.getAbsolutePath(),
-                                image
-                        );
-                        if (!mResultFolder.contains(folder)) {
-                            List<Image> imageList = new ArrayList<>();
-                            imageList.add(image);
-                            folder.images = imageList;
-                            mResultFolder.add(folder);
-                        } else {
-                            // Update
-                            Folder f = mResultFolder.get(mResultFolder.indexOf(folder));
-                            f.images.add(image);
-                        }
+                    // Regenerate folders
+                    // Get folder name
+                    File imageFile = new File(path);
+                    File folderFile = imageFile.getParentFile();
+                    Folder folder = new Folder(
+                            folderFile.getName(),
+                            folderFile.getAbsolutePath(),
+                            image
+                    );
+                    if (!mResultFolder.contains(folder)) {
+                        List<Image> imageList = new ArrayList<>();
+                        imageList.add(image);
+                        folder.images = imageList;
+                        mResultFolder.add(folder);
+                    } else {
+                        // Update
+                        Folder f = mResultFolder.get(mResultFolder.indexOf(folder));
+                        f.images.add(image);
                     }
-
                 } while (data.moveToNext());
 
                 mImageAdapter.setData(images);
@@ -549,6 +553,11 @@ public class MultiImageSelectorFragment extends Fragment {
 
                 mFolderAdapter.setData(mResultFolder);
                 hasFolderGened = true;
+
+                if(mLastSelectedFolder != null) {
+                    mLastSelectedFolder = updateFolderData(mLastSelectedFolder);
+                    showImagesFromFolder(mLastSelectedFolder);
+                }
             }
         }
 
@@ -557,6 +566,14 @@ public class MultiImageSelectorFragment extends Fragment {
 
         }
     };
+
+    private Folder updateFolderData(Folder targetFolder) {
+        for (Folder curFolder : mResultFolder) {
+            if(targetFolder.path.equals(curFolder.path))
+                return curFolder;
+        }
+        return null;
+    }
 
     /**
      * Callback Interface

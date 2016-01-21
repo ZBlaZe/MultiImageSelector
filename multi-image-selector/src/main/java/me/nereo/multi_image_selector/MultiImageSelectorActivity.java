@@ -225,7 +225,7 @@ public class MultiImageSelectorActivity extends FragmentActivity implements Mult
                 public void run() {
                     mSortOrderPopupWindow.dismiss();
                     Fragment frag = getSupportFragmentManager().findFragmentById(R.id.image_grid);
-                    ((MultiImageSelectorFragment) frag).changeSortOrder(position);
+                    ((MultiImageSelectorFragment) frag).setSortOrder(position);
                 }
             }, 150);
         }
