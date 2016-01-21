@@ -30,7 +30,7 @@ public class FolderAdapter extends BaseAdapter {
 
     int mImageSize;
 
-    int lastSelected = 0;
+    Folder lastSelectedFolder = new Folder();
 
     public FolderAdapter(Context context) {
         mContext = context;
@@ -59,7 +59,7 @@ public class FolderAdapter extends BaseAdapter {
 
     @Override
     public Folder getItem(int i) {
-        return i == 0 ? null : mFolders.get(i - 1);
+        return i == 0 ? new Folder() : mFolders.get(i - 1);
     }
 
     @Override
@@ -94,7 +94,8 @@ public class FolderAdapter extends BaseAdapter {
             } else {
                 holder.bindData(getItem(i));
             }
-            holder.indicator.setVisibility(lastSelected == i ? View.VISIBLE : View.INVISIBLE);
+            boolean visibility = lastSelectedFolder.equals(getItem(i));
+            holder.indicator.setVisibility(visibility ? View.VISIBLE : View.INVISIBLE);
         }
         return view;
     }
@@ -110,14 +111,18 @@ public class FolderAdapter extends BaseAdapter {
     }
 
     public void setSelectIndex(int i) {
-        if (lastSelected == i) return;
+        if(lastSelectedFolder.equals(getItem(i))) return;
 
-        lastSelected = i;
+        lastSelectedFolder = getItem(i);
         notifyDataSetChanged();
     }
 
     public int getSelectIndex() {
-        return lastSelected;
+        for (int i = 1; i < getCount(); i++) {
+            if(getItem(i).equals(lastSelectedFolder))
+                return i;
+        }
+        return 0;
     }
 
     class ViewHolder {
