@@ -312,7 +312,7 @@ public class MultiImageSelectorFragment extends Fragment {
                         mFolderPopupWindow.dismiss();
                         setDataForCategory(index, v);
                         // Slide to the initial position
-                        mGridView.smoothScrollToPosition(0);
+                        mGridView.setSelection(0);
                     }
                 }, 100);
 
@@ -482,6 +482,7 @@ public class MultiImageSelectorFragment extends Fragment {
     public void setSortOrder(int sortOrderId) {
         mCurrentSortOrderId = sortOrderId;
         getActivity().getSupportLoaderManager().restartLoader(LOADER_ALL, null, mLoaderCallback);
+        mGridView.setSelection(0);
     }
 
     private LoaderManager.LoaderCallbacks<Cursor> mLoaderCallback = new LoaderManager.LoaderCallbacks<Cursor>() {
